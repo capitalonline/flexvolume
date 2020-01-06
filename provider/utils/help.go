@@ -4,7 +4,7 @@ import "fmt"
 
 var (
 	// VERSION should be updated by hand at each release
-	VERSION = "v1.12.6"
+	VERSION = "v0.1"
 
 	// GITCOMMIT will be overwritten automatically by the build system
 	GITCOMMIT = "HEAD"
@@ -17,12 +17,10 @@ func PluginVersion() string {
 
 // Usage help
 func Usage() {
-	fmt.Printf("In K8s Mode: " +
+	fmt.Printf(
 		"Use binary file as the first parameter, and format support:\n" +
-		"    plugin init: \n" +
-		"    plugin attach: for alicloud disk plugin\n" +
-		"    plugin detach: for alicloud disk plugin\n" +
-		"    plugin mount:  for nas, oss plugin\n" +
-		"    plugin umount: for nas, oss plugin\n\n" +
-		"You can refer to K8s flexvolume docs: \n")
+			"    plugin init: \n" +
+			"    plugin mount:  for nas plugin\n" +
+			"    plugin umount: for nas plugin\n\n" +
+			"You can refer to cds flexvolume docs: \n")
 }

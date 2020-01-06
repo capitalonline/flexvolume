@@ -2,24 +2,14 @@ package main
 
 import (
 	"fmt"
-	driver "github.com/AliyunContainerService/flexvolume/provider/driver"
-	utils "github.com/AliyunContainerService/flexvolume/provider/utils"
+	driver "github.com/capitalonline/flexvolume/provider/driver"
+	utils "github.com/capitalonline/flexvolume/provider/utils"
 	"os"
 	"strings"
 )
 
-// Expect to support K8s and Swarm platform
-// Under K8s, plugin will run in cli mode, process running and exit after the actions.
-// Under swarm, plugin will be running always, and communicate with docker by socket.
 func main() {
-
-	// get the environment of platform
-	platform := os.Getenv("ACS_PLATFORM")
-	if platform == "swarm" {
-		driver.RunningInSwarm()
-	} else {
-		driver.RunK8sAction()
-	}
+	driver.Run()
 }
 
 // check running environment and print help

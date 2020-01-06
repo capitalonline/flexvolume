@@ -3,7 +3,7 @@ package nas
 import (
 	"errors"
 	"fmt"
-	"github.com/AliyunContainerService/flexvolume/provider/utils"
+	"github.com/capitalonline/flexvolume/provider/utils"
 	log "github.com/sirupsen/logrus"
 	"net"
 	"os"
@@ -28,16 +28,12 @@ type NasOptions struct {
 // const values
 const (
 	NASPORTNUM     = "2049"
-	NASTEMPMNTPath = "/mnt/acs_mnt/k8s_nas/" // used for create sub directory;
+	NASTEMPMNTPath = "/mnt/cds_mnt/k8s_nas/" // used for create sub directory;
 	MODECHAR       = "01234567"
 )
 
 // NasPlugin nas plugin
-/*
-type NasPlugin struct {
-	client *nas.Client
-}
-*/
+
 // Change NasPlugin struct null
 type NasPlugin struct {
 }
@@ -196,9 +192,9 @@ func (p *NasPlugin) Unmount(mountPoint string) utils.Result {
 	})
 	err := cmd.Run()
 	if timeout == true {
-		log.Warnf("Nas, Umount nfs Fail with time out: " +  err.Error())
+		log.Warnf("Nas, Umount nfs Fail with time out: " + err.Error())
 	} else if utils.IsMounted(mountPoint) {
-		utils.FinishError("Nas, Umount nfs Fail: " +  err.Error())
+		utils.FinishError("Nas, Umount nfs Fail: " + err.Error())
 	}
 
 	log.Info("Umount nfs Successful:", mountPoint)
@@ -238,7 +234,7 @@ func (p *NasPlugin) isNasServerReachable(url string) bool {
 	return true
 }
 
-// 1. mount to /mnt/acs_mnt/k8s_nas/volumename first
+// 1. mount to /mnt/cds_mnt/k8s_nas/volumename first
 // 2. run mkdir for sub directory
 // 3. umount the tmep directory
 func (p *NasPlugin) createNasSubDir(opt *NasOptions) {
@@ -355,4 +351,24 @@ func waitTimeout(wg *sync.WaitGroup, timeout int) bool {
 		return true
 	}
 
+}
+
+// Attach not support
+func (p *NasPlugin) Attach(opts interface{}, nodeName string) utils.Result {
+	return utils.NotSupport()
+}
+
+// Detach not support
+func (p *NasPlugin) Detach(device string, nodeName string) utils.Result {
+	return utils.NotSupport()
+}
+
+// Waitforattach no Support
+func (p *NasPlugin) Waitforattach(devicePath string, opts interface{}) utils.Result {
+	return utils.NotSupport()
+}
+
+// Mountdevice Not Support
+func (p *NasPlugin) Mountdevice(mountPath string, opts interface{}) utils.Result {
+	return utils.NotSupport()
 }

@@ -7,16 +7,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AliyunContainerService/flexvolume/provider/utils"
+	"github.com/capitalonline/flexvolume/provider/utils"
 	log "github.com/sirupsen/logrus"
 )
 
 // const values for monitoring
 const (
-	NSENTER_CMD = "/acs/nsenter --mount=/proc/1/ns/mnt "
-	DISK_BIN    = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/alicloud~disk/disk"
-	OSS_BIN     = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/alicloud~oss/oss"
-	NAS_BIN     = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/alicloud~nas/nas"
+	NSENTER_CMD = "/cds/nsenter --mount=/proc/1/ns/mnt "
+	NAS_BIN     = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cds~nas/nas"
 
 	FLEXVOLUME_CONFIG_FILE = "/host/etc/kubernetes/flexvolume.conf"
 	HOST_SYS_LOG           = "/host/var/log/messages"
@@ -50,31 +48,12 @@ func Monitoring() {
 	// monitoring in loop
 	for {
 		version := utils.PluginVersion()
-		// check Disk plugin status
-		if os.Getenv("ACS_DISK") == "true" {
-			mntCmd := fmt.Sprintf("%s %s --version", NSENTER_CMD, DISK_BIN)
-			if out, err := utils.Run(mntCmd); err != nil {
-				log.Printf("Warning, Monitoring disk error: %s", err.Error())
-			} else if out != version {
-				log.Printf("Warning, the disk plugin version is not right, running: %s, expect: %s", out, version)
-			}
-		}
-
-		if os.Getenv("ACS_NAS") == "true" {
+		if os.Getenv("CDS_NAS") == "true" {
 			mntCmd := fmt.Sprintf("%s %s --version", NSENTER_CMD, NAS_BIN)
 			if out, err := utils.Run(mntCmd); err != nil {
 				log.Printf("Warning, Monitoring nas error: %s", err.Error())
 			} else if out != version {
 				log.Printf("Warning, the nas plugin version is not right, running: %s, expect: %s", out, version)
-			}
-		}
-
-		if os.Getenv("ACS_OSS") == "true" {
-			mntCmd := fmt.Sprintf("%s %s --version", NSENTER_CMD, OSS_BIN)
-			if out, err := utils.Run(mntCmd); err != nil {
-				log.Printf("Warning, Monitoring oss error: %s", err.Error())
-			} else if out != version {
-				log.Printf("Warning, the Oss plugin version is not right, running: %s, expect: %s", out, version)
 			}
 		}
 

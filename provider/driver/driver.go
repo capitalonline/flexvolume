@@ -6,40 +6,29 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	/*
-	"github.com/AliyunContainerService/flexvolume/provider/cpfs"
-	"github.com/AliyunContainerService/flexvolume/provider/disk"
-	"github.com/AliyunContainerService/flexvolume/provider/oss"
-	*/
-	"github.com/AliyunContainerService/flexvolume/provider/nas"
-	"github.com/AliyunContainerService/flexvolume/provider/monitor"
-	"github.com/AliyunContainerService/flexvolume/provider/utils"
+
+	"github.com/capitalonline/flexvolume/provider/monitor"
+	"github.com/capitalonline/flexvolume/provider/nas"
+	"github.com/capitalonline/flexvolume/provider/utils"
 	log "github.com/sirupsen/logrus"
 )
 
 // FluxVolumePlugin: VolumePlugin interface for plugins
 type FluxVolumePlugin interface {
-	/*
-	Getvolumename(opt interface{}) utils.Result
-	Attach(opt interface{}, nodeName string) utils.Result
-	Waitforattach(devicePath string, opt interface{}) utils.Result
-	Mountdevice(mountPath string, opt interface{}) utils.Result
-	Detach(volumeName string, nodeName string) utils.Result
-	*/
 	NewOptions() interface{} // not called by kubelet
 	Init() utils.Result
 	Mount(opt interface{}, mountPath string) utils.Result
 	Unmount(mountPoint string) utils.Result
+	Attach(opt interface{}, nodeName string) utils.Result
+	Waitforattach(devicePath string, opt interface{}) utils.Result
+	Mountdevice(mountPath string, opt interface{}) utils.Result
+	Detach(volumeName string, nodeName string) utils.Result
 }
 
 // const values
 const (
 	MB_SIZE = 1024 * 1024
-	/*
-	TYPE_PLUGIN_DISK  = "disk"
-	TYPE_PLUGIN_OSS   = "oss"
-	TYPE_PLUGIN_CPFS  = "cpfs"
-	*/
+
 	// Only support nas with mount and unmount
 	TYPE_PLUGIN_NAS   = "nas"
 	PLUGIN_MONITORING = "monitoring"
@@ -47,7 +36,7 @@ const (
 )
 
 // RunK8sAction run kubernetes command
-func RunK8sAction() {
+func Run() {
 	if len(os.Args) < 2 {
 		utils.Finish(utils.Fail("Expected at least one parameter"))
 	}
@@ -63,14 +52,6 @@ func RunK8sAction() {
 	} else {
 		utils.Finish(utils.Fail("Not Support Plugin Driver: " + os.Args[0]))
 	}
-	/* else if driver == TYPE_PLUGIN_NAS {
-		RunPlugin(&nas.NasPlugin{})
-	} else if driver == TYPE_PLUGIN_OSS {
-		RunPlugin(&oss.OssPlugin{})
-	} else if driver == TYPE_PLUGIN_CPFS {
-		RunPlugin(&cpfs.CpfsPlugin{})
-	}
-	*/
 }
 
 // RunPlugin only support mount and detach now.
@@ -101,7 +82,6 @@ func RunPlugin(plugin FluxVolumePlugin) {
 
 		mountPath := os.Args[2]
 		utils.Finish(plugin.Unmount(mountPath))
-	/*
 	case "waitforattach":
 		if len(os.Args) != 4 {
 			utils.FinishError("waitforattach expected exactly 4 arguments; got: " + strings.Join(os.Args, ","))
@@ -113,17 +93,6 @@ func RunPlugin(plugin FluxVolumePlugin) {
 
 		devicePath := os.Args[2]
 		utils.Finish(plugin.Waitforattach(devicePath, opt))
-
-	case "getvolumename":
-		if len(os.Args) != 3 {
-			utils.FinishError("getvolumename expected exactly 3 arguments; got: " + strings.Join(os.Args, ","))
-		}
-		opt := plugin.NewOptions()
-		if err := json.Unmarshal([]byte(os.Args[2]), opt); err != nil {
-			utils.FinishError("GetVolumeName Options illegal; got: " + os.Args[3])
-		}
-
-		utils.Finish(plugin.Getvolumename(opt))
 
 	case "attach":
 		if len(os.Args) != 4 {
@@ -145,7 +114,6 @@ func RunPlugin(plugin FluxVolumePlugin) {
 
 		volumeName := os.Args[2]
 		utils.Finish(plugin.Detach(volumeName, os.Args[3]))
-	*/
 	default:
 		utils.Finish(utils.NotSupport(os.Args))
 	}

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AliyunContainerService/flexvolume/provider/utils"
+	"github.com/capitalonline/flexvolume/provider/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -61,7 +61,7 @@ func fixIssueOrphanPod() {
 				podFixedList = podFixedList + orphanUid
 
 				// check oss, nas, disk path;
-				drivers := []string{"alicloud~disk", "alicloud~nas", "alicloud~oss", "kubernetes.io~nfs"}
+				drivers := []string{"cds~nas", "kubernetes.io~nfs"}
 				for _, driver := range drivers {
 					volHostPath := "/var/lib/kubelet/pods/" + orphanUid + "/volumes/" + driver
 					volPodPath := "/host/var/lib/kubelet/pods/" + orphanUid + "/volumes/" + driver

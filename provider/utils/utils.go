@@ -1,17 +1,13 @@
 package utils
 
 import (
-	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/denverdino/aliyungo/metadata"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"os/exec"
 	"reflect"
-	"strings"
 )
 
 // DefaultOptions used for global ak
@@ -23,17 +19,6 @@ type DefaultOptions struct {
 		Region               string `json:"region"`
 	}
 }
-
-// const values
-const (
-	encodedCredPath = "/etc/kubernetes/cloud-config.alicloud"
-	credPath        = "/etc/kubernetes/cloud-config"
-	USER_AKID       = "/etc/.volumeak/akId"
-	USER_AKSECRET   = "/etc/.volumeak/akSecret"
-	METADATA_URL    = "http://100.100.100.200/latest/meta-data/"
-	REGIONID_TAG    = "region-id"
-	INSTANCEID_TAG  = "instance-id"
-)
 
 // Succeed successful action
 func Succeed(a ...interface{}) Result {
@@ -147,42 +132,6 @@ func IsFileExisting(filename string) bool {
 	return true
 }
 
-// GetRegionAndInstanceId Get regionid instanceid;
-func GetRegionAndInstanceId() (string, string, error) {
-	regionId, err := GetMetaData(REGIONID_TAG)
-	if err != nil {
-		return "", "", err
-	}
-	instanceId, err := GetMetaData(INSTANCEID_TAG)
-	if err != nil {
-		return "", "", err
-	}
-	return regionId, instanceId, nil
-}
-
-// GetMetaData get metadata
-func GetMetaData(resource string) (string, error) {
-	resp, err := http.Get(METADATA_URL + resource)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	return string(body), nil
-}
-
-// GetRegionIdAndInstanceId get region id instance id
-func GetRegionIdAndInstanceId(nodeName string) (string, string, error) {
-	strs := strings.SplitN(nodeName, ".", 2)
-	if len(strs) < 2 {
-		return "", "", fmt.Errorf("failed to get regionID and instanceId from nodeName")
-	}
-	return strs[0], strs[1], nil
-}
-
 // WriteJosnFile save json data to file
 func WriteJosnFile(obj interface{}, file string) error {
 	maps := make(map[string]interface{})
@@ -214,105 +163,6 @@ func ReadJsonFile(file string) (map[string]string, error) {
 	return jsonObj, nil
 }
 
-// GetLocalAK read ossfs ak from local or from secret file
-func GetLocalAK() (string, string) {
-	accessKeyID, accessSecret := "", ""
-	//accessKeyID, accessSecret = GetLocalAK()
-	//if accessKeyID == "" || accessSecret == "" {
-	if IsFileExisting(USER_AKID) && IsFileExisting(USER_AKSECRET) {
-		raw, err := ioutil.ReadFile(USER_AKID)
-		if err != nil {
-			log.Error("Read User AK ID file error:", err.Error())
-			return "", ""
-		}
-		accessKeyID = string(raw)
-
-		raw, err = ioutil.ReadFile(USER_AKSECRET)
-		if err != nil {
-			log.Error("Read User AK Secret file error:", err.Error())
-			return "", ""
-		}
-		accessSecret = string(raw)
-	} else {
-		accessKeyID, accessSecret = GetLocalSystemAK()
-	}
-	//}
-	return strings.TrimSpace(accessKeyID), strings.TrimSpace(accessSecret)
-}
-
-// GetDefaultAK read default ak from local file or from STS
-func GetDefaultAK() (string, string, string) {
-	accessKeyID, accessSecret := GetLocalAK()
-
-	accessToken := ""
-	if accessKeyID == "" || accessSecret == "" {
-		accessKeyID, accessSecret, accessToken = GetSTSAK()
-	}
-
-	return accessKeyID, accessSecret, accessToken
-
-}
-
-// GetSTSAK get STS AK
-func GetSTSAK() (string, string, string) {
-	m := metadata.NewMetaData(nil)
-
-	rolename := ""
-	var err error
-	if rolename, err = m.Role(); err != nil {
-		log.Fatal("Get role name error: ", err.Error())
-		return "", "", ""
-	}
-	role, err := m.RamRoleToken(rolename)
-	if err != nil {
-		log.Fatal("Get STS Token error, " + err.Error())
-		return "", "", ""
-	}
-	return role.AccessKeyId, role.AccessKeySecret, role.SecurityToken
-}
-
-// GetLocalSystemAK get local access key
-func GetLocalSystemAK() (string, string) {
-	var accessKeyID, accessSecret string
-	var defaultOpt DefaultOptions
-
-	if IsFileExisting(encodedCredPath) {
-		raw, err := ioutil.ReadFile(encodedCredPath)
-		if err != nil {
-			FinishError("Read cred file failed: " + err.Error())
-		}
-		err = json.Unmarshal(raw, &defaultOpt)
-		if err != nil {
-			FinishError("Parse json cert file error: " + err.Error())
-		}
-		keyID, err := b64.StdEncoding.DecodeString(defaultOpt.Global.AccessKeyID)
-		if err != nil {
-			FinishError("Decode accesskeyid failed: " + err.Error())
-		}
-		secret, err := b64.StdEncoding.DecodeString(defaultOpt.Global.AccessKeySecret)
-		if err != nil {
-			FinishError("Decode secret failed: " + err.Error())
-		}
-		accessKeyID = string(keyID)
-		accessSecret = string(secret)
-	} else if IsFileExisting(credPath) {
-		raw, err := ioutil.ReadFile(credPath)
-		if err != nil {
-			FinishError("Read cred file failed: " + err.Error())
-		}
-		err = json.Unmarshal(raw, &defaultOpt)
-		if err != nil {
-			FinishError("New Ecs Client error json, " + err.Error())
-		}
-		accessKeyID = defaultOpt.Global.AccessKeyID
-		accessSecret = defaultOpt.Global.AccessKeySecret
-
-	} else {
-		return "", ""
-	}
-	return accessKeyID, accessSecret
-}
-
 // PathExists returns true if the specified path exists.
 func PathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
@@ -324,23 +174,3 @@ func PathExists(path string) (bool, error) {
 		return false, err
 	}
 }
-
-//IsLikelyNotMountPoint check is mountpoint or not
-/*
-func IsLikelyNotMountPoint(file string) (bool, error) {
-	stat, err := os.Stat(file)
-	if err != nil {
-		return true, err
-	}
-	rootStat, err := os.Lstat(file + "/..")
-	if err != nil {
-		return true, err
-	}
-	// If the directory has a different device as parent, then it is a mountpoint.
-	if stat.Sys().(*syscall.Stat_t).Dev != rootStat.Sys().(*syscall.Stat_t).Dev {
-		return false, nil
-	}
-
-	return true, nil
-}
-*/
