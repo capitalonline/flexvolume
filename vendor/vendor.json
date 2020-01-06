@@ -1,0 +1,19 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "a+HW4KfxlTA1ExAUrW8w6EKYoxM=",
+			"path": "github.com/sirupsen/logrus",
+			"revision": "67a7fdcf741f4d5cee82cb9800994ccfd4393ad0",
+			"revisionTime": "2019-10-26T11:39:18Z"
+		},
+		{
+			"checksumSHA1": "1NWO740Tcho9ZNWVdfnFnoz5RD8=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "a1369afcdac740082c63165b07ec83b531884be2",
+			"revisionTime": "2020-01-02T13:53:07Z"
+		}
+	],
+	"rootPath": "github.com/capitalonline/flexvolume"
+}
