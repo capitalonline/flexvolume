@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: flexnaspv2g001
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  flexVolume:
+    driver: "cds/nas"
+    options:
+      server: "164.52.43.137"
+      path: "/sharemnt/mnt3"
+      vers: "4.0"
