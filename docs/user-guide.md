@@ -59,7 +59,7 @@ spec:
   accessModes:
     - ReadWriteMany
   flexVolume:
-    driver: "cdscloud/nas"
+    driver: "cds/nas"
     options:
       server: NasServerIP, please replace with your own nas server ip
       path: NasSharePath, please replace with your own nas server share path
