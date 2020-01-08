@@ -132,8 +132,8 @@ func IsFileExisting(filename string) bool {
 	return true
 }
 
-// WriteJosnFile save json data to file
-func WriteJosnFile(obj interface{}, file string) error {
+// WriteJsonFile save json data to file
+func WriteJsonFile(obj interface{}, file string) error {
 	maps := make(map[string]interface{})
 	t := reflect.TypeOf(obj)
 	v := reflect.ValueOf(obj)
