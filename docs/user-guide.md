@@ -13,7 +13,7 @@ NAS为共享文件存储，可以同时为多个Pod提供共享存储服务
 > 1. 手动创建NAS共享存储盘并记录ip地址和共享目录
 
 ### 直接通过 Volume 使用 (replicas = 1)
-- Create Pod with spec `nas-deploy.yaml`. 
+- Create Pod with spec `nas-deploy.yaml`.
 
 ```yaml
 apiVersion: apps/v1
@@ -38,10 +38,10 @@ spec:
           flexVolume:
             driver: "cdscloud/nas"
             options:
-	          server: NasServerIP, please replace with your own nas server ip
+              server: NasServerIP, please replace with your own nas server ip
               path: NasSharePath, please replace with your own nas server share path
               vers: "4.0"
-			  mode: "644"
+              mode: "644"
 ```
 
 ### 通过 PV/PVC 使用（目前不支持动态pv）

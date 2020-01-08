@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-cd ${GOPATH}/src/github.com/CapitalonlineService/flexvolume/
-#GIT_SHA=`git rev-parse --short HEAD || echo "HEAD"`
-
+cd ${GOPATH}/src/github.com/capitalonline/flexvolume/
 
 export GOARCH="amd64"
 export GOOS="linux"

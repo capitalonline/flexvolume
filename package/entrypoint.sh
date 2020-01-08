@@ -3,15 +3,15 @@
 # Get System version
 host_os="centos-7-4"
 
-/acs/nsenter --mount=/proc/1/ns/mnt which lsb_release
+/cds/nsenter --mount=/proc/1/ns/mnt which lsb_release
 lsb_release_exist=$?
 if [ "$lsb_release_exist" != "0" ]; then
-  /acs/nsenter --mount=/proc/1/ns/mnt ls /etc/os-release
+  /cds/nsenter --mount=/proc/1/ns/mnt ls /etc/os-release
   os_release_exist=$?
 fi
 
 if [ "$lsb_release_exist" = "0" ]; then
-    os_info=`/acs/nsenter --mount=/proc/1/ns/mnt lsb_release -a`
+    os_info=`/cds/nsenter --mount=/proc/1/ns/mnt lsb_release -a`
 
     if [ `echo $os_info | grep CentOS | grep 7.2 | wc -l` != "0" ]; then
         host_os="centos-7-2"
@@ -34,8 +34,8 @@ if [ "$lsb_release_exist" = "0" ]; then
     fi
 
 elif [ "$os_release_exist" = "0" ]; then
-    osId=`/acs/nsenter --mount=/proc/1/ns/mnt cat /etc/os-release | grep "ID="`
-    osVersion=`/acs/nsenter --mount=/proc/1/ns/mnt cat /etc/os-release | grep "VERSION_ID="`
+    osId=`/cds/nsenter --mount=/proc/1/ns/mnt cat /etc/os-release | grep "ID="`
+    osVersion=`/cds/nsenter --mount=/proc/1/ns/mnt cat /etc/os-release | grep "VERSION_ID="`
 
     if [ `echo $osId | grep "centos" | wc -l` != "0" ]; then
         if [ `echo $osVersion | grep "7" | wc -l` = "1" ]; then
@@ -58,38 +58,38 @@ restart_kubelet="false"
 
 install_nas() {
     # install nfs-client
-    if [ ! `/acs/nsenter --mount=/proc/1/ns/mnt which mount.nfs4` ]; then
+    if [ ! `/cds/nsenter --mount=/proc/1/ns/mnt which mount.nfs4` ]; then
         if [ "$host_os" = "centos-7-4" ] || [ "$host_os" = "centos-7-3" ] || [ "$host_os" = "centos-7-5" ] || [ "$host_os" = "centos-7" ] ; then
-            /acs/nsenter --mount=/proc/1/ns/mnt yum install -y nfs-utils
+            /cds/nsenter --mount=/proc/1/ns/mnt yum install -y nfs-utils
 
         elif [ "$host_os" = "ubuntu-1404" ] || [ "$host_os" = "ubuntu-1604" ]; then
-            /acs/nsenter --mount=/proc/1/ns/mnt apt-get update -y
-            /acs/nsenter --mount=/proc/1/ns/mnt apt-get install -y nfs-common
+            /cds/nsenter --mount=/proc/1/ns/mnt apt-get update -y
+            /cds/nsenter --mount=/proc/1/ns/mnt apt-get install -y nfs-common
         fi
     fi
 
     # install lsof tool
-    #if [ ! `/acs/nsenter --mount=/proc/1/ns/mnt which lsof` ]; then
+    #if [ ! `/cds/nsenter --mount=/proc/1/ns/mnt which lsof` ]; then
     #    if [ "$host_os" = "centos-7-4" ] || [ "$host_os" = "centos-7-3" ] || [ "$host_os" = "centos-7-5" ] || [ "$host_os" = "centos-7" ]; then
-    #        /acs/nsenter --mount=/proc/1/ns/mnt yum install -y lsof
+    #        /cds/nsenter --mount=/proc/1/ns/mnt yum install -y lsof
     #    fi
     #fi
 
     # first install
     if [ ! -f "/host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas" ];then
         mkdir -p /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/
-        cp /acs/flexvolume /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas
+        cp /cds/flexvolume /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas
         chmod 755 /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas
 
     # update nas
     else
         oldmd5=`md5sum /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas | awk '{print $1}'`
-        newmd5=`md5sum /acs/flexvolume | awk '{print $1}'`
+        newmd5=`md5sum /cds/flexvolume | awk '{print $1}'`
 
         # install a new bianary
         if [ "$oldmd5" != "$newmd5" ]; then
             rm -rf /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas
-            cp /acs/flexvolume /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas
+            cp /cds/flexvolume /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas
             chmod 755 /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas
         fi
     fi
@@ -100,7 +100,7 @@ install_nas() {
 enableADController="false"
 count=`ps -ef | grep kubelet | grep "enable-controller-attach-detach=false" | grep -v "grep" | wc -l`
 if [ "$count" = "0" ]; then
-  configInFile=`/acs/nsenter --mount=/proc/1/ns/mnt cat /var/lib/kubelet/config.yaml | grep enableControllerAttachDetach | grep false | grep -v grep | wc -l`
+  configInFile=`/cds/nsenter --mount=/proc/1/ns/mnt cat /var/lib/kubelet/config.yaml | grep enableControllerAttachDetach | grep false | grep -v grep | wc -l`
   if [ "$configInFile" = "0" ]; then
     enableADController=true
   fi
@@ -116,4 +116,4 @@ if [ "$CDS_NAS" = "true" ]; then
 fi
 
 ## monitoring should be here
-/acs/flexvolume monitoring
+/cds/flexvolume monitoring

@@ -1,13 +1,11 @@
 FROM golang:1.9.7 AS build-env
-COPY . /go/src/github.com/CapitalonlineService/flexvolume/
-RUN cd /go/src/github.com/CapitalonlineService/flexvolume/ && ./build.sh
+COPY . /go/src/github.com/capitalonline/flexvolume/
+RUN cd /go/src/github.com/capitalonline/flexvolume/ && ./build.sh
 
 FROM alpine:3.7
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories \
-    && apk --no-cache add fuse curl libxml2 openssl libstdc++ libgcc
-COPY package /acs
-COPY --from=build-env /go/src/github.com/CapitalonlineService/flexvolume/flexvolume-linux /acs/flexvolume
+RUN apk --no-cache add fuse curl libxml2 openssl libstdc++ libgcc
+COPY package /cds
+COPY --from=build-env /go/src/github.com/capitalonline/flexvolume/flexvolume-linux /cds/flexvolume
+RUN chmod 755 /cds/*
 
-RUN chmod 755 /acs/*
-
-ENTRYPOINT ["/acs/entrypoint.sh"]
+ENTRYPOINT ["/cds/entrypoint.sh"]
