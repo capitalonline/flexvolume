@@ -76,21 +76,21 @@ install_nas() {
     #fi
 
     # first install
-    if [ ! -f "/host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas" ];then
-        mkdir -p /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/
-        cp /cds/flexvolume /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas
-        chmod 755 /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas
+    if [ ! -f "/host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cds~nas/nas" ];then
+        mkdir -p /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cds~nas/
+        cp /cds/flexvolume /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cds~nas/nas
+        chmod 755 /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cds~nas/nas
 
     # update nas
     else
-        oldmd5=`md5sum /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas | awk '{print $1}'`
+        oldmd5=`md5sum /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cds~nas/nas | awk '{print $1}'`
         newmd5=`md5sum /cds/flexvolume | awk '{print $1}'`
 
         # install a new bianary
         if [ "$oldmd5" != "$newmd5" ]; then
-            rm -rf /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas
-            cp /cds/flexvolume /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas
-            chmod 755 /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cdscloud~nas/nas
+            rm -rf /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cds~nas/nas
+            cp /cds/flexvolume /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cds~nas/nas
+            chmod 755 /host/usr/libexec/kubernetes/kubelet-plugins/volume/exec/cds~nas/nas
         fi
     fi
 

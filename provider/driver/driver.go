@@ -32,7 +32,7 @@ const (
 	// Only support nas with mount and unmount
 	TYPE_PLUGIN_NAS   = "nas"
 	PLUGIN_MONITORING = "monitoring"
-	LOGFILE_PREFIX    = "/var/log/cdscloud/flexvolume_"
+	LOGFILE_PREFIX    = "/var/log/cds/flexvolume_"
 )
 
 // RunK8sAction run kubernetes command
