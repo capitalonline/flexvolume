@@ -1,4 +1,4 @@
-FROM golang:1.9.7 AS build-env
+FROM golang:1.13.6-alpine AS build-env
 COPY . /go/src/github.com/capitalonline/flexvolume/
 RUN cd /go/src/github.com/capitalonline/flexvolume/ && ./build.sh
 

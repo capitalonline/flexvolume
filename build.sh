@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 set -e
 
 cd ${GOPATH}/src/github.com/capitalonline/flexvolume/
