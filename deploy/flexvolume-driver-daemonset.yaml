@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cds-flexvolume
+  namespace: kube-system
+  labels:
+    k8s-volume: cds-flexvolume
+spec:
+  selector:
+    matchLabels:
+      name: cds-flexvolume-pod
+  template:
+    metadata:
+      labels:
+        name: cds-flexvolume-pod
+    spec:
+      hostPID: true
+      hostNetwork: true
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: cds-flexvolume
+          image: registry-bj.capitalonline.net/cck/flexvolume:v0.1
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          env:
+            - name: CDS_NAS
+              value: "true"
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          volumeMounts:
+            - name: usrdir
+              mountPath: /host/usr/
+            - name: etcdir
+              mountPath: /host/etc/
+            - name: logdir
+              mountPath: /var/log/cds/
+      volumes:
+        - name: usrdir
+          hostPath:
+            path: /usr/
+        - name: etcdir
+          hostPath:
+            path: /etc/
+        - name: logdir
+          hostPath:
+            path: /var/log/cds/
+  updateStrategy:
+    type: RollingUpdate
