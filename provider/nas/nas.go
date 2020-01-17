@@ -3,8 +3,6 @@ package nas
 import (
 	"errors"
 	"fmt"
-	"github.com/capitalonline/flexvolume/provider/utils"
-	log "github.com/sirupsen/logrus"
 	"net"
 	"os"
 	"os/exec"
@@ -13,6 +11,10 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
+
+	"github.com/capitalonline/flexvolume/provider/utils"
 )
 
 // NasOptions nas options
@@ -30,6 +32,10 @@ const (
 	NASPORTNUM     = "2049"
 	NASTEMPMNTPath = "/mnt/cds_mnt/k8s_nas/" // used for create sub directory;
 	MODECHAR       = "01234567"
+	defaultV3Path  = "/nfsshare"
+	defaultV4Path  = "/"
+	defaultV3Opts  = "noresvport,nolock,tcp"
+	defaultV4Opts  = "noresvport"
 )
 
 // NasPlugin nas plugin
@@ -292,22 +298,26 @@ func (p *NasPlugin) checkOptions(opt *NasOptions) error {
 	}
 	defer conn.Close()
 
+	// nfs version, support 4.0, 3.0
+	if opt.Vers == "" {
+		opt.Vers = "4.0"
+	}
+	nfsV4 := false
+	if strings.HasPrefix(opt.Vers, "4") {
+		nfsV4 = true
+	}
+
 	// nfs server path
 	if opt.Path == "" {
-		opt.Path = "/"
+		if nfsV4 {
+			opt.Path = defaultV4Path
+		} else {
+			opt.Path = defaultV3Path
+		}
 	}
 	if !strings.HasPrefix(opt.Path, "/") {
 		log.Errorf("NAS: Path should be empty or start with /, %s", opt.Path)
 		return errors.New("NAS: Path should be empty or start with /: " + opt.Path)
-	}
-
-	// nfs version, support 4.0
-	// indeed, 4.0 is only avaliable for CDS nas now;
-	if opt.Vers == "4.0" {
-		opt.Vers = "4.0"
-	} else {
-		log.Errorf("NAS: version only support 4.0 now, %s", opt.Vers)
-		return errors.New("NAS: version only support 4.0 now: " + opt.Vers)
 	}
 
 	// check mode
@@ -326,15 +336,14 @@ func (p *NasPlugin) checkOptions(opt *NasOptions) error {
 
 	// check options
 	if opt.Opts == "" {
-		if opt.Vers == "4.0" || opt.Vers == "4" {
-			opt.Opts = "noresvport,nolock,tcp"
+		if nfsV4 {
+			opt.Opts = defaultV4Opts
 		} else {
-			opt.Opts = "noresvport"
+			opt.Opts = defaultV3Opts
 		}
 	} else if strings.ToLower(opt.Opts) == "none" {
 		opt.Opts = ""
 	}
-
 	return nil
 }
 
