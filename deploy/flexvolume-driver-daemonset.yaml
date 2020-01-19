@@ -23,7 +23,7 @@ spec:
       containers:
         - name: cds-flexvolume
           image: registry-bj.capitalonline.net/cck/flexvolume:v0.1
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           securityContext:
             privileged: true
           env:
