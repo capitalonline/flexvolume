@@ -259,15 +259,15 @@ func (p *NasPlugin) createNasSubDir(opt *NasOptions) {
 	_, err := utils.Run(mntCmd)
 	if err != nil {
 		if strings.Contains(err.Error(), "reason given by server: No such file or directory") || strings.Contains(err.Error(), "access denied by server while mounting") {
-			if strings.HasPrefix(opt.Path, "/share/") {
-				usePath = usePath[6:]
-				mntCmd = fmt.Sprintf("mount -t nfs -o vers=%s %s:%s %s", opt.Vers, opt.Server, "/share", nasTmpPath)
+			if strings.HasPrefix(opt.Path, defaultV3Path+"/") {
+				usePath = strings.TrimPrefix(usePath, defaultV3Path)
+				mntCmd = fmt.Sprintf("mount -t nfs -o vers=%s %s:%s %s", opt.Vers, opt.Server, defaultV3Path, nasTmpPath)
 				_, err := utils.Run(mntCmd)
 				if err != nil {
-					utils.FinishError("Nas, Mount to temp directory(with /share) fail: " + err.Error())
+					utils.FinishError("Nas, Mount to temp directory(with /nfsshare) fail: " + err.Error())
 				}
 			} else {
-				utils.FinishError("Nas, maybe use fast nas, but path not startwith /share: " + err.Error())
+				utils.FinishError("Nas, maybe use version 3, but path not startwith /nfsshare: " + err.Error())
 			}
 		} else {
 			utils.FinishError("Nas, Mount to temp directory fail: " + err.Error())
@@ -298,9 +298,13 @@ func (p *NasPlugin) checkOptions(opt *NasOptions) error {
 	}
 	defer conn.Close()
 
-	// nfs version, support 4.0, 3.0
+	// nfs version, support 4.0
 	if opt.Vers == "" {
 		opt.Vers = "4.0"
+	}
+	// only vers=3 is supported by nfs
+	if strings.HasPrefix(opt.Vers, "3") {
+		opt.Vers = "3"
 	}
 	nfsV4 := false
 	if strings.HasPrefix(opt.Vers, "4") {
