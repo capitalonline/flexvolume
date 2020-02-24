@@ -20,10 +20,10 @@ import (
 // NasOptions nas options
 type NasOptions struct {
 	Server     string `json:"server"`
-	Path       string `json:"path"`
-	Vers       string `json:"vers"`
-	Mode       string `json:"mode"`
-	Opts       string `json:"options"`
+	Path       string `json:"path,omitempty"`
+	Vers       string `json:"vers,omitempty"`
+	Mode       string `json:"mode,omitempty"`
+	Opts       string `json:"options,omitempty"`
 	VolumeName string `json:"kubernetes.io/pvOrVolumeName"`
 }
 
