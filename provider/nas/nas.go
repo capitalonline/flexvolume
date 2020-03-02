@@ -32,8 +32,6 @@ const (
 	NASPORTNUM     = "2049"
 	NASTEMPMNTPath = "/mnt/cds_mnt/k8s_nas/" // used for create sub directory;
 	MODECHAR       = "01234567"
-	defaultV3Path  = "/nfsshare"
-	defaultV4Path  = "/"
 	defaultV3V4Path = "/nfsshare"
 	defaultV3Opts  = "noresvport,nolock,tcp"
 	defaultV4Opts  = "noresvport"
@@ -304,9 +302,9 @@ func (p *NasPlugin) checkOptions(opt *NasOptions) error {
 		opt.Vers = "4.0"
 	}
 
-	// if input vers=3, then set vers=3.0
-	if strings.HasPrefix(opt.Vers, "3") {
-		opt.Vers = "3.0"
+	// set vers=3.0 to vers=3, because vers=3.0 mount cmd submit error "parsing error on 'vers=' option"
+	if strings.HasPrefix(opt.Vers, "3.0") {
+		opt.Vers = "3"
 	}
 
 	// if input vers=4, then set vers=4.0
