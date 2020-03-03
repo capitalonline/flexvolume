@@ -1,0 +1,15 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-flex-001
+  namespace: default 		# 将 pvc 部署在 default 命名空间内
+spec:
+  storageClassName: "" 			# openshift 集群测试时，需要设置次参数，否则会自动使用默认的SC自动创建PV
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+  selector:
+    matchLabels:
+      name: "pv001"
