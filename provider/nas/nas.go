@@ -293,7 +293,8 @@ func (p *NasPlugin) checkOptions(opt *NasOptions) error {
 	conn, err := net.DialTimeout("tcp", opt.Server+":"+NASPORTNUM, time.Second*time.Duration(3))
 	if err != nil {
 		log.Errorf("NAS: Cannot connect to nas host: %s", opt.Server)
-		return errors.New("NAS: Cannot connect to nas host: " + opt.Server)
+		errMsg := fmt.Sprintf("NAS: Cannot connect to nas host: " + opt.Server)
+		return errors.New(errMsg)
 	}
 	defer conn.Close()
 
@@ -318,19 +319,22 @@ func (p *NasPlugin) checkOptions(opt *NasOptions) error {
 	}
 	if !strings.HasPrefix(opt.Path, "/nfsshare") {
 		log.Errorf("NAS: Path should start with /nfsshare, %s", opt.Path)
-		return errors.New("NAS: Path should start with /nfsshare, %s: " + opt.Path)
+		errMsg := fmt.Sprintf("NAS: Path should start with /nfsshare, %s: " + opt.Path)
+		return errors.New(errMsg)
 	}
 
 	// check mode
 	if opt.Mode != "" {
 		modeLen := len(opt.Mode)
 		if modeLen != 3 {
-			return errors.New("NAS: mode input format error: " + opt.Mode)
+			errMsg := fmt.Sprintf("NAS: mode input format error: " + opt.Mode)
+			return errors.New(errMsg)
 		}
 		for i := 0; i < modeLen; i++ {
 			if !strings.Contains(MODECHAR, opt.Mode[i:i+1]) {
 				log.Errorf("NAS: mode is illegal, %s", opt.Mode)
-				return errors.New("NAS: mode is illegal " + opt.Mode)
+				errMsg := fmt.Sprintf("NAS: mode input format error: " + opt.Mode)
+				return errors.New(errMsg)
 			}
 		}
 	}
