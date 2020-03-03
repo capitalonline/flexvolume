@@ -27,8 +27,10 @@ if [ "$lsb_release_exist" = "0" ]; then
         host_os="ubuntu-1404"
     elif [ `echo $os_info | grep 16.04 | wc -l` != "0" ]; then
         host_os="ubuntu-1604"
+    elif [ `echo $os_info | grep "Red Hat" | grep 7.6 | wc -l` != "0" ]; then
+        host_os="RedHat-7-6"
     else
-        echo "OS is not ubuntu 1604/1404, Centos7"
+        echo "OS is not ubuntu 1604/1404, Centos7, Red Hat"
         echo "system information: "$os_info
         exit 1
     fi
@@ -50,6 +52,10 @@ elif [ "$os_release_exist" = "0" ]; then
           host_os="ubuntu-1404"
         elif [ `echo $osVersion | grep "16.04" | wc -l` != "0" ]; then
           host_os="ubuntu-1604"
+        fi
+    elif [ `echo $osId | grep "rhel" | wc -l` != "0" ]; then
+        if [ `echo $osVersion | grep "7.6" | wc -l` = "1" ]; then
+          host_os="RedHat-7-6"
         fi
     fi
 fi

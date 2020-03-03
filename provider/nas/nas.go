@@ -20,10 +20,10 @@ import (
 // NasOptions nas options
 type NasOptions struct {
 	Server     string `json:"server"`
-	Path       string `json:"path"`
-	Vers       string `json:"vers"`
-	Mode       string `json:"mode"`
-	Opts       string `json:"options"`
+	Path       string `json:"path,omitempty"`
+	Vers       string `json:"vers,omitempty"`
+	Mode       string `json:"mode,omitempty"`
+	Opts       string `json:"options,omitempty"`
 	VolumeName string `json:"kubernetes.io/pvOrVolumeName"`
 }
 
@@ -32,8 +32,7 @@ const (
 	NASPORTNUM     = "2049"
 	NASTEMPMNTPath = "/mnt/cds_mnt/k8s_nas/" // used for create sub directory;
 	MODECHAR       = "01234567"
-	defaultV3Path  = "/nfsshare"
-	defaultV4Path  = "/"
+	defaultV3V4Path = "/nfsshare"
 	defaultV3Opts  = "noresvport,nolock,tcp"
 	defaultV4Opts  = "noresvport"
 )
@@ -259,9 +258,9 @@ func (p *NasPlugin) createNasSubDir(opt *NasOptions) {
 	_, err := utils.Run(mntCmd)
 	if err != nil {
 		if strings.Contains(err.Error(), "reason given by server: No such file or directory") || strings.Contains(err.Error(), "access denied by server while mounting") {
-			if strings.HasPrefix(opt.Path, defaultV3Path+"/") {
-				usePath = strings.TrimPrefix(usePath, defaultV3Path)
-				mntCmd = fmt.Sprintf("mount -t nfs -o vers=%s %s:%s %s", opt.Vers, opt.Server, defaultV3Path, nasTmpPath)
+			if strings.HasPrefix(opt.Path, defaultV3V4Path+"/") {
+				usePath = strings.TrimPrefix(usePath, defaultV3V4Path)
+				mntCmd = fmt.Sprintf("mount -t nfs -o vers=%s %s:%s %s", opt.Vers, opt.Server, defaultV3V4Path, nasTmpPath)
 				_, err := utils.Run(mntCmd)
 				if err != nil {
 					utils.FinishError("Nas, Mount to temp directory(with /nfsshare) fail: " + err.Error())
@@ -294,53 +293,55 @@ func (p *NasPlugin) checkOptions(opt *NasOptions) error {
 	conn, err := net.DialTimeout("tcp", opt.Server+":"+NASPORTNUM, time.Second*time.Duration(3))
 	if err != nil {
 		log.Errorf("NAS: Cannot connect to nas host: %s", opt.Server)
-		return errors.New("NAS: Cannot connect to nas host: " + opt.Server)
+		errMsg := fmt.Sprintf("NAS: Cannot connect to nas host: " + opt.Server)
+		return errors.New(errMsg)
 	}
 	defer conn.Close()
 
-	// nfs version, support 4.0
+	// default nfs version 4.0
 	if opt.Vers == "" {
 		opt.Vers = "4.0"
 	}
-	// only vers=3 is supported by nfs
-	if strings.HasPrefix(opt.Vers, "3") {
+
+	// set vers=3.0 to vers=3, because vers=3.0 mount cmd submit error "parsing error on 'vers=' option"
+	if strings.HasPrefix(opt.Vers, "3.0") {
 		opt.Vers = "3"
 	}
-	nfsV4 := false
+
+	// if input vers=4, then set vers=4.0
 	if strings.HasPrefix(opt.Vers, "4") {
-		nfsV4 = true
+		opt.Vers = "4.0"
 	}
 
 	// nfs server path
 	if opt.Path == "" {
-		if nfsV4 {
-			opt.Path = defaultV4Path
-		} else {
-			opt.Path = defaultV3Path
-		}
+		opt.Path = defaultV3V4Path
 	}
-	if !strings.HasPrefix(opt.Path, "/") {
-		log.Errorf("NAS: Path should be empty or start with /, %s", opt.Path)
-		return errors.New("NAS: Path should be empty or start with /: " + opt.Path)
+	if !strings.HasPrefix(opt.Path, "/nfsshare") {
+		log.Errorf("NAS: Path should start with /nfsshare, %s", opt.Path)
+		errMsg := fmt.Sprintf("NAS: Path should start with /nfsshare, %s: " + opt.Path)
+		return errors.New(errMsg)
 	}
 
 	// check mode
 	if opt.Mode != "" {
 		modeLen := len(opt.Mode)
 		if modeLen != 3 {
-			return errors.New("NAS: mode input format error: " + opt.Mode)
+			errMsg := fmt.Sprintf("NAS: mode input format error: " + opt.Mode)
+			return errors.New(errMsg)
 		}
 		for i := 0; i < modeLen; i++ {
 			if !strings.Contains(MODECHAR, opt.Mode[i:i+1]) {
 				log.Errorf("NAS: mode is illegal, %s", opt.Mode)
-				return errors.New("NAS: mode is illegal " + opt.Mode)
+				errMsg := fmt.Sprintf("NAS: mode input format error: " + opt.Mode)
+				return errors.New(errMsg)
 			}
 		}
 	}
 
 	// check options
 	if opt.Opts == "" {
-		if nfsV4 {
+		if opt.Vers == "4.0" {
 			opt.Opts = defaultV4Opts
 		} else {
 			opt.Opts = defaultV3Opts
