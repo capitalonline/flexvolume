@@ -1,7 +1,9 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: flexnaspv2g001
+  name: pv-flex-001
+  labels:
+    name: "pv001"
 spec:
   capacity:
     storage: 2Gi
@@ -11,5 +13,6 @@ spec:
     driver: "cds/nas"
     options:
       server: "164.52.43.137"
-      path: "/sharemnt/mnt3"
+      path: "/nfsshare/static"
       vers: "4.0"
+      mode: "755"

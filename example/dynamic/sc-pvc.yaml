@@ -1,0 +1,13 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: sc-pvc-flex-001
+  namespace: default		# 将 pvc 部署在 default 命名空间内
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "nas-sc-001"	# 此时pvc使用部署的sc自动创建pv
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi

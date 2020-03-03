@@ -1,0 +1,12 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nas-sc-001
+provisioner: cds/nas
+parameters:
+  archiveOnDelete: "false"
+  server: "164.52.43.137"
+  path: "/nfsshare/dynamic"
+  vers: "4.0"
+  mode: "755"
+reclaimPolicy: "Delete"
