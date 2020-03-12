@@ -109,7 +109,7 @@ func (p *NasPlugin) Mount(opts interface{}, mountPath string) utils.Result {
 		wg1.Add(1)
 
 		go func(*sync.WaitGroup) {
-			cmd := fmt.Sprintf("chmod -R %s %s", opt.Mode, mountPath)
+			cmd := fmt.Sprintf("chmod %s %s", opt.Mode, mountPath)
 			if _, err := utils.Run(cmd); err != nil {
 				log.Errorf("Nas chmod cmd fail: %s %s", cmd, err)
 			} else {
