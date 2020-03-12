@@ -22,7 +22,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: cds-flexvolume
-          image: registry-bj.capitalonline.net/cck/flexvolume:v0.1
+          image: registry-bj.capitalonline.net/cck/flexvolume:v1.0
           imagePullPolicy: Always
           securityContext:
             privileged: true
